@@ -1,20 +1,23 @@
-# 590 PR final project, spring 2019
+#590 PR final project, spring 2019
 
 import pandas as pd
+import numpy as np
 from math import e
 import math 
 import random
 import requests
 from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
+# %matplotlib inline
 
-# Part one: pre-process data sets to create a base data frame (performance of previous season) and a FIFA data frame
+###Part one: pre-process datasets to create a base data frame (performance of previous season) and a fifa data frame
 
 result = pd.read_csv('results.csv')
 # result.head()
-# limited result only from last season out of the 12 season records
+#limited result only from last season out of the 12 season records
 result = result[result['season'] == '2017-2018'] 
 
-# get a list of correct spelling of all team names
+#get a list of correct spelling of all team names
 team_names = result.home_team.unique()
 team_names = team_names.tolist()
 # type(team_names)
@@ -26,7 +29,7 @@ away = result.groupby('away_team')['away_goals'].sum()
 home.sort_index()
 away.sort_index()
 
-# stats of 20 teams from last season
+#stats of 20 teams from last season
 stats = pd.read_csv('stats.csv')
 stats = stats[stats['season'] == '2017-2018']
 # stats.columns
@@ -100,7 +103,7 @@ fifa_pl_2018 = fifa_pl_2018[['Name','ATT','MID','DEF','OVR']]
 
 
 # base_df['Team Name']
-# make sure all team names are coherent across different data sources
+#make sure all team names are coherent across different data sources
 fifa_pl_2018 = fifa_pl_2018.replace('Spurs','Tottenham Hotspur')
 fifa_pl_2018 = fifa_pl_2018.replace('Manchester Utd','Manchester United')
 fifa_pl_2018 = fifa_pl_2018.replace('West Ham','West Ham United')
@@ -110,13 +113,13 @@ fifa_pl_2018 = fifa_pl_2018.replace('Newcastle Utd','Newcastle United')
 fifa_pl_2018 = fifa_pl_2018.replace('Brighton','Brighton and Hove Albion')
 fifa_pl_2018 = fifa_pl_2018.replace('Huddersfield','Huddersfield Town')
 
-# merge previous season performance with FIFA values
+#merge previous season performance with FIFA values
 df = base_df.merge(fifa_pl_2018,left_on='Team Name',right_on='Name')
 # df.head()
 df = df.drop(columns='Name')
 df = df.merge(possession_df,left_on='Team Name',right_on='team')
 df = df.drop(columns=['team','Team'])
-# all data from last season gathered for probability calculation
+#all data from last season gathered for probability calculation
 
 
 
@@ -146,14 +149,18 @@ formula['P-Home'] = ''
 formula['P-Away'] = ''
 formula['Prob-Home'] = ''
 formula['Prob-Away'] = ''
-# formula is only the data set illustrates Manchester City's schedule for a season
 
-# specify only goals from 0 to 10 are taken into consideration in this simulation
+formula['Home passes min'] = ''
+formula['Home passes max'] = ''
+formula['Away passes min'] = ''
+formula['Away passes max'] = ''
+# formula is only the dataset illustrates Manchester City's schedule for a season
+
+#spesify only goals from 0 to 10 are taken into consideration in this simulation
 goal_range = list(range(0,11))
 
 # goal_range
 # len(goal_range)
-
 
 def po(goal_range: list,factor: float):
     """
@@ -174,9 +181,10 @@ def po(goal_range: list,factor: float):
 
 # float(df[df['Team Name'] == 'Manchester City']['Home Goals Per Game'])
 
-# populate the data frame with all scoring probabilities
 
 
+
+#populate the data frame with all scoring probabilities
 for index, row in formula.iterrows():
 
     home_team = row['Home Team']
@@ -191,6 +199,8 @@ for index, row in formula.iterrows():
     temp_list = []
     y = row['P-Home']
     for index in range(0,len(y)):
+
+
         if index == 0:
             temp = y[index]
             temp_list.append(temp)
@@ -204,6 +214,8 @@ for index, row in formula.iterrows():
     temp_list = []
     y = row['P-Away']
     for index in range(0,len(y)):
+
+
         if index == 0:
             temp = y[index]
             temp_list.append(temp)
@@ -212,8 +224,13 @@ for index, row in formula.iterrows():
             temp += y[index]
             temp_list.append(temp)
     row['Prob-Away'] = temp_list
-# formula.head()
-# all probability calculated
+
+    row['Home passes min'] = float(df[df['Team Name'] == home_team]['avg_pass'])
+    row['Home passes max'] = float(df[df['Team Name'] == home_team]['avg_pass']) / (float(df[df['Team Name'] == home_team]['Pass%']) / 100)
+    row['Away passes min'] = float(df[df['Team Name'] == away_team]['avg_pass'])
+    row['Away passes max'] = float(df[df['Team Name'] == away_team]['avg_pass']) / (float(df[df['Team Name'] == away_team]['Pass%']) / 100)
+#formula.head()
+#all probability calculated
 
 
 # Test on the Lambda factor in the goal probability function:
@@ -233,7 +250,7 @@ def prob(goal: int):
 # prob(0),prob(1),prob(2),prob(3),prob(4),prob(5),prob(6)
 # prob(0),prob(1),prob(2),prob(3),prob(4),prob(5),prob(6)
 
-# Part two: set up the simulation
+#Part two: set up the simulation
 
 # random.uniform(0,1)
 
@@ -296,9 +313,7 @@ fixture_schedule['Prob-Away'] = ''
 fixture_schedule = fixture_schedule.rename(columns={'home_team':'Home Team','away_team':'Away Team'})
 # fixture_schedule.head()
 
-# populate probabilities into fixture schedule
-
-
+#populate probabilities into fixture schedule
 def populate_lambda(input_df: pd.DataFrame):
     """
     populate the fixture_schedule data frame with probabilities
@@ -470,7 +485,7 @@ empty_df['team'] = ''
 # an empty df similar to normal scoring table for later use of inserting number of seasons record into it
 # empty_df.head()
 
-# set numbers of simulations
+#set numbers of simulations
 number_seasons_to_simulate = 10
 
 for i in range(0,number_seasons_to_simulate):
@@ -497,3 +512,73 @@ def write_to_csv(times: int):
     empty_df.to_csv('1000times.csv',index=False)
 
 write_to_csv(number_seasons_to_simulate)
+
+
+def simulation_store_in_df_with_possession(dataframe: pd.DataFrame) -> pd.DataFrame:
+    output_df = pd.DataFrame(
+        columns=['Home Team', 'Home Goal', 'Away Goal', 'Away Team', 'Home Possession', 'Away Possession'])
+    i = 0
+    for index, row in dataframe.iterrows():
+
+        home_team = row['Home Team']
+        away_team = row['Away Team']
+        home_random = random.uniform(0, 1)
+        away_random = random.uniform(0, 1)
+        home_score_list = row['Prob-Home']
+        away_score_list = row['Prob-Away']
+
+        home_random_passes = random.randint(round(row['Home passes min']), round(row['Home passes max']))
+        away_random_passes = random.randint(round(row['Away passes min']), round(row['Away passes max']))
+
+        home_pos = round(home_random_passes / (home_random_passes + away_random_passes) * 100)
+        away_pos = round(away_random_passes / (home_random_passes + away_random_passes) * 100)
+
+        home_goal = 0
+        away_goal = 0
+        #         print(len(home_score_list),len(away_score_list))
+        for index in range(0, len(home_score_list)):
+            if home_random >= home_score_list[index]:
+                home_goal = index
+
+        for index in range(0, len(away_score_list)):
+            if away_random >= away_score_list[index]:
+                away_goal = index
+
+        #         output_df['Home Team'] = home_team
+        #         output_df['Home Goal'] = home_goal
+        #         output_df['Away Goal'] = away_goal
+        #         output_df['Away Team'] = away_team
+        output_df = output_df.append({'Home Team': home_team, 'Home Goal': home_goal, 'Away Goal': away_goal,
+                                      'Away Team': away_team, 'Home Possession': home_pos, 'Away Possession': away_pos},
+                                     ignore_index=True)
+        i += 1
+
+    return output_df
+
+
+
+list_wins = []
+list_pos = []
+list_goals = []
+for i in range(0,500):
+    temp_df = simulation_store_in_df_with_possession(formula)
+    win_match = 0
+    goals = 0
+    for index, row in temp_df.iterrows():
+        if row['Home Team'] == 'Manchester City':
+            goals += row['Home Goal']
+            if row['Home Goal'] > row['Away Goal']:
+                win_match += 1
+        elif row['Away Team'] == 'Manchester City':
+            goals += row['Away Goal']
+            if row['Away Goal'] > row['Home Goal']:
+                win_match += 1
+    top_19 = temp_df.iloc[1:19]
+    bottom_19 = temp_df.iloc[20:]
+    avg_pos = (top_19['Home Possession'].sum() + bottom_19['Away Possession'].sum()) / 38
+    list_wins.append(win_match)
+    list_pos.append(avg_pos)
+    list_goals.append(goals)
+
+plt.scatter(list_wins,list_pos)
+plt.scatter(list_goals,list_pos)
