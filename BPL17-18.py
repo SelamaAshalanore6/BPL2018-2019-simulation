@@ -486,7 +486,7 @@ empty_df['team'] = ''
 # empty_df.head()
 
 #set numbers of simulations
-number_seasons_to_simulate = 10
+number_seasons_to_simulate = 100
 
 for i in range(0,number_seasons_to_simulate):
     each_season = simulation_store_in_df(fixture_schedule)
@@ -560,7 +560,7 @@ def simulation_store_in_df_with_possession(dataframe: pd.DataFrame) -> pd.DataFr
 list_wins = []
 list_pos = []
 list_goals = []
-for i in range(0,500):
+for i in range(0,1000):
     temp_df = simulation_store_in_df_with_possession(formula)
     win_match = 0
     goals = 0
@@ -581,4 +581,6 @@ for i in range(0,500):
     list_goals.append(goals)
 
 plt.scatter(list_wins,list_pos)
+plt.savefig('winspos.png')
 plt.scatter(list_goals,list_pos)
+plt.savefig('goalspos.png')
