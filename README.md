@@ -34,3 +34,8 @@ Please grade on the py file instead of the jupyter notebook, yet they are essent
 If the py file simulation takes too long to run, please modify the variable 'number_seasons_to_simulate' to 100 or 10.
 Even the simulation seems only to run 1000 times in the py script, in fact, one simulation contains 380 games.
 
+The reason that we choose only 2017-18 season to simulate results in Premier League:
+The Premier League has a rule called ‘relegation’, which means the last three ranked teams would be relegated to the inferior league called EFL Championship and three other teams that ranked top three in EFL Championship will be promoted to Premier League, so there are always changes in the twenty teams in Premier League.
+
+We use the model Poisson distribution to calculate the factor called lambda, and we scrap numbers from FIFA for per team, which are attack score, defense score and overall, and they can be called as the ability numbers of teams, which are various per year. If we choose multiple years, we need to scrap the ability numbers of teams in terms of years. Besides this, we use ‘home/away goals per game’ to calculate this lambda, for one team, if the opposite teams changed, the performance and goals would also change, so the number of average goals would be meaningless.
+
