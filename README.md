@@ -19,3 +19,11 @@ Arsenal F.C. would be the least possible to be ranked within the top 4 comparing
 Github repository: https://github.com/SelamaAshalanore6/Final_Project
 
 Dataset Link: https://www.kaggle.com/zaeemnalla/premier-league#stats.csv
+
+
+Revised prposal:
+More dataset from:
+https://www.whoscored.com/Regions/252/Tournaments/2/Seasons/6829/Stages/15151/TeamStatistics/England-Premier-League-2017-2018
+https://www.fifaindex.com/teams/fifa18_278/?league=13&order=desc
+
+Explanation...
